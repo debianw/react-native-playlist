@@ -73,15 +73,15 @@ const VideoView: React.FC<VideoViewProps> = ({
   };
   const onChange = (time: number) => {
     seek(time);
-    setCurrentTime(time);
   };
   const onPause = () => {
     setIsPlaying(false);
   };
-  const onSlideComplete = () => {
+  const onSlideComplete = (time: number) => {
     setTimeout(() => {
       seek(currentTime);
       setIsPlaying(true);
+      setCurrentTime(time);
     }, 0);
   };
   const onPlay = (play: boolean) => {
