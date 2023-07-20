@@ -1,19 +1,20 @@
-import React from 'react';
-import {SafeAreaView, ViewProps, StyleSheet} from 'react-native';
+import React, {PropsWithChildren} from 'react';
+import {View, SafeAreaView, ViewProps, StyleSheet} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 interface BackgroundProps {
   children: React.ReactNode;
+  overlay?: boolean;
 }
 
-interface BackgroundStaticProps {
-  Content: React.FC<ViewProps>;
-}
-const Background: React.FC<BackgroundProps> & BackgroundStaticProps = ({
+const Background = ({
   children,
-}) => {
+  overlay,
+}: PropsWithChildren<BackgroundProps>) => {
   return (
     <>
+      {overlay && <View style={styles.overlayMask} />}
+
       <LinearGradient
         style={styles.mask}
         colors={[
@@ -42,6 +43,15 @@ Background.Content = Content;
 const styles = StyleSheet.create({
   mask: {
     position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    zIndex: 1,
+  },
+  overlayMask: {
+    position: 'absolute',
+    backgroundColor: 'rgba(0, 20, 68, 0.55)',
     top: 0,
     right: 0,
     bottom: 0,
