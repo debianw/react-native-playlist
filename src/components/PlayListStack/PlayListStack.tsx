@@ -7,14 +7,7 @@ import {
   Dimensions,
   ViewToken,
 } from 'react-native';
-import VideoView, {VideoViewProps} from './VideoView';
-import Toolbar from './Toolbar';
-
-export type Item = {
-  id: string;
-  source: VideoViewProps['source'];
-  title: string;
-};
+import PlayListItem, {Item} from './PlayListItem';
 
 interface PlayListStackProps {
   items: Item[];
@@ -45,16 +38,14 @@ const PlayListStack: React.FC<PlayListStackProps> = ({items}) => {
   const renderItem = ({item, index}: ListRenderItemInfo<Item>) => {
     return (
       <View style={styles.page}>
-        <VideoView
-          source={item.source}
+        <PlayListItem
+          item={item}
+          caption={`Step ${currentIndex + 1} of ${items.length}`}
           isVisible={currentIndex === index}
           onNext={currentIndex < items.length - 1 ? onNext : undefined}
-          onPrev={currentIndex > 0 ? onPrev : undefined}>
-          <Toolbar
-            title={item.title}
-            subtitle={`Step ${currentIndex + 1} of ${items.length}`}
-          />
-        </VideoView>
+          onPrev={currentIndex > 0 ? onPrev : undefined}
+          isLastTrack={currentIndex >= items.length - 1}
+        />
       </View>
     );
   };
@@ -88,7 +79,6 @@ const PlayListStack: React.FC<PlayListStackProps> = ({items}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000000',
   },
   page: {
     width: Dimensions.get('window').width,

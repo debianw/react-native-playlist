@@ -3,7 +3,7 @@ import {View, Text, StyleSheet} from 'react-native';
 
 interface ToolbarProps {
   title: string;
-  subtitle: string;
+  subtitle?: string;
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({title, subtitle}) => {
@@ -16,11 +16,13 @@ const Toolbar: React.FC<ToolbarProps> = ({title, subtitle}) => {
           </Text>
         </View>
 
-        <View>
-          <Text style={StyleSheet.flatten([styles.text, styles.subtitle])}>
-            {subtitle}
-          </Text>
-        </View>
+        {subtitle ? (
+          <View>
+            <Text style={StyleSheet.flatten([styles.text, styles.subtitle])}>
+              {subtitle}
+            </Text>
+          </View>
+        ) : null}
       </View>
     </View>
   );

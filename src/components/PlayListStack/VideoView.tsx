@@ -1,5 +1,5 @@
 import React, {useState, useRef, useEffect} from 'react';
-import {View, StyleSheet} from 'react-native';
+import {View, StyleSheet, Dimensions} from 'react-native';
 import Video, {
   LoadError,
   OnLoadData,
@@ -14,7 +14,15 @@ export interface VideoViewProps {
   isVisible: boolean;
   onNext?: (() => void) | undefined;
   onPrev?: (() => void) | undefined;
-  children?: React.ReactNode;
+  onPlay?: ((play: boolean) => void) | undefined;
+  onEnd?: (() => void) | undefined;
+  children: React.FC<any>;
+  overlay?: boolean;
+}
+
+export interface VideoViewRenderProps {
+  play: (play: boolean) => void;
+  isPlaying: boolean;
 }
 
 const VideoView: React.FC<VideoViewProps> = ({
@@ -23,6 +31,9 @@ const VideoView: React.FC<VideoViewProps> = ({
   isVisible,
   onNext,
   onPrev,
+  onPlay: onPlayProp,
+  onEnd: onEndProp,
+  overlay,
 }): JSX.Element => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
@@ -53,60 +64,74 @@ const VideoView: React.FC<VideoViewProps> = ({
     console.log('done!');
     console.log('duration:', duration);
     console.log('currentTime:', currentTime);
+    if (onEndProp) {
+      onEndProp();
+    }
   };
   const seek = (time: number) => {
     videoRef.current?.seek(time);
   };
   const onChange = (time: number) => {
     seek(time);
-    setCurrentTime(time);
   };
   const onPause = () => {
     setIsPlaying(false);
   };
-  const onSlideComplete = () => {
+  const onSlideComplete = (time: number) => {
     setTimeout(() => {
       seek(currentTime);
       setIsPlaying(true);
+      setCurrentTime(time);
     }, 0);
+  };
+  const onPlay = (play: boolean) => {
+    setIsPlaying(play);
+    if (onPlayProp && play) {
+      onPlayProp(true);
+    }
+  };
+
+  const renderProps: VideoViewRenderProps = {
+    play: onPlay,
+    isPlaying,
   };
 
   return (
-    <Background>
-      <Video
-        ref={videoRef}
-        source={source}
-        resizeMode="cover"
-        style={styles.videoContainer}
-        onBuffer={onBuffer}
-        onError={onError}
-        paused={!isPlaying}
-        onLoad={onLoad}
-        onProgress={onProgress}
-        onEnd={onEnd}
-      />
+    <Video
+      ref={videoRef}
+      source={source}
+      // repeat
+      resizeMode="cover"
+      style={styles.videoContainer}
+      onBuffer={onBuffer}
+      onError={onError}
+      paused={!isPlaying}
+      onLoad={onLoad}
+      onProgress={onProgress}
+      onEnd={onEnd}>
+      <Background overlay={overlay}>
+        <Background.Content style={styles.container}>
+          <View style={styles.innerContainer}>{children(renderProps)}</View>
 
-      <Background.Content style={styles.container}>
-        <View style={styles.innerContainer}>{children}</View>
-
-        <View style={styles.controlsContainer}>
-          <Controls
-            paused={!isPlaying}
-            onPlay={setIsPlaying}
-            onNext={onNext}
-            onPrev={onPrev}
-            sliderProps={{
-              value: currentTime,
-              minimumValue: 0,
-              maximumValue: Math.floor(duration),
-              onValueChange: onChange,
-              onSlidingStart: onPause,
-              onSlidingComplete: onSlideComplete,
-            }}
-          />
-        </View>
-      </Background.Content>
-    </Background>
+          <View style={styles.controlsContainer}>
+            <Controls
+              paused={!isPlaying}
+              onPlay={onPlay}
+              onNext={onNext}
+              onPrev={onPrev}
+              sliderProps={{
+                value: currentTime,
+                minimumValue: 0,
+                maximumValue: Math.floor(duration),
+                onValueChange: onChange,
+                onSlidingStart: onPause,
+                onSlidingComplete: onSlideComplete,
+              }}
+            />
+          </View>
+        </Background.Content>
+      </Background>
+    </Video>
   );
 };
 
@@ -134,12 +159,15 @@ const styles = StyleSheet.create({
   },
 
   videoContainer: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    zIndex: 1,
+    width: Dimensions.get('window').width,
+    // height: 200,
+    height: Dimensions.get('window').height,
+    // position: 'absolute',
+    // top: 0,
+    // right: 0,
+    // bottom: 0,
+    // left: 0,
+    // zIndex: 1,
   },
 });
 
